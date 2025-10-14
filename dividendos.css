@@ -1,0 +1,33 @@
+.nav-link {
+  display: inline-block;
+  color: #fff;
+  background: rgba(255,255,255,0.15);
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  transition: background .2s ease;
+}
+.nav-link:hover { background: rgba(255,255,255,0.25); }
+
+.hint { margin-top: .75rem; color: var(--text-secondary); }
+
+.success { background: var(--success-color); color: #fff; border: none; }
+
+.details-row td { background: #f9fafb; padding: 0; }
+.inner-table { width: 100%; border-collapse: collapse; }
+.inner-table td { padding: .5rem .75rem; border-bottom: 1px solid var(--border-color); }
+
+/* Make rows clickable */
+#dividendsTable tbody tr { cursor: pointer; }
+
+/* Collapse toggle button */
+.collapse-toggle {
+  float: right;
+  margin-top: -2.2rem;
+  background: transparent;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+.collapse-toggle[aria-expanded="false"] { transform: rotate(-90deg); }

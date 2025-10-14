@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visor DeGiro - Operaciones</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <nav class="main-nav">
+            <div class="nav-brand">📊 Visor DeGiro</div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-item">💼 Portfolio</a>
+                <a href="dividendos.html" class="nav-item">💵 Dividendos</a>
+                <a href="operaciones.html" class="nav-item active">📈 Operaciones</a>
+            </div>
+        </nav>
+
+        <header>
+            <h1>📈 Operaciones</h1>
+            <p>Análisis detallado de todas tus operaciones de compra y venta</p>
+        </header>
+
+        <div id="dashboard" class="dashboard" style="display: none;">
+            <!-- Filtros -->
+            <section class="filters-section">
+                <h3>🔎 Filtros</h3>
+                <div class="filters">
+                    <input type="text" id="searchProduct" placeholder="Buscar por producto..." />
+                    <!-- Removed Compra/Venta chips to keep the filters compact -->
+                    <input type="month" id="filterMonth" />
+                    <button id="clearFilters">Limpiar filtros</button>
+                    <div class="calc-method" style="display: flex; gap: 0.5rem; align-items: center; padding: 0.35rem 0.5rem; background: #f3f4f6; border-radius: 8px; border: 1px solid #e5e7eb;">
+                        <span style="font-weight: 700; color: #1f2937; font-size: 0.9rem; margin-right:0.25rem;">📊 Método de cálculo:</span>
+                        <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; padding: 0.25rem 0.5rem; background: white; border: 2px solid #d1d5db; border-radius: 6px; transition: all 0.15s; font-weight: 500; font-size: 0.9rem;">
+                            <input type="radio" name="calcMethod" value="fifo" checked style="cursor: pointer; width: 14px; height: 14px;" />
+                            <span>FIFO</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; padding: 0.25rem 0.5rem; background: white; border: 2px solid #d1d5db; border-radius: 6px; transition: all 0.15s; font-weight: 500; font-size: 0.9rem;">
+                            <input type="radio" name="calcMethod" value="average" style="cursor: pointer; width: 14px; height: 14px;" />
+                            <span>Prom. Ponderado</span>
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tabla de operaciones -->
+            <section class="table-section">
+                <h3>🛒⬆️⬇️ Compras y Ventas</h3>
+                <div class="table-info">
+                    <span id="transactionCount">0 transacciones</span>
+                </div>
+                <div class="table-wrapper">
+                    <table id="transactionsTable">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>ISIN</th>
+                                <th>Fecha</th>
+                                <th>Tipo</th>
+                                <th style="text-align: center;">Acciones</th>
+                                <th style="text-align: right;">Precio/Acción</th>
+                                <th style="text-align: right;">Total</th>
+                                <th style="text-align: right;">Media Venta</th>
+                                <th style="text-align: right;">Media Posición</th>
+                                <th style="text-align: right;">Ganancia/Pérdida</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsBody"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="operaciones.js"></script>
+</body>
+</html>

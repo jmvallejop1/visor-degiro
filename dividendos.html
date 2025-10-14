@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Visor DeGiro - Dividendos</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="dividendos.css" />
+    <meta name="description" content="Agrupar y analizar dividendos (bruto, retención, neto) por evento y producto, gestionando cambios de divisa." />
+</head>
+<body>
+    <div class="container">
+        <nav class="main-nav">
+            <div class="nav-brand">� Visor DeGiro</div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-item">💼 Portfolio</a>
+                <a href="dividendos.html" class="nav-item active">💵 Dividendos</a>
+                <a href="operaciones.html" class="nav-item">📈 Operaciones</a>
+            </div>
+        </nav>
+
+        <header>
+            <h1>💵 Dividendos</h1>
+            <p>Agrupa todas las líneas de un mismo pago (bruto, retención, FX) y calcula el neto.</p>
+        </header>
+
+        <!-- Resumen por divisa primero -->
+        <section class="table-section">
+            <h3>💱 Resumen por divisa</h3>
+            <button id="toggleCurrencyTable" class="collapse-toggle" aria-expanded="true" title="Contraer/Expandir">▼</button>
+            <div class="table-wrapper">
+                <table id="currencyTable">
+                    <thead>
+                        <tr>
+                            <th>Divisa</th>
+                            <th>Bruto</th>
+                            <th>Retención</th>
+                            <th>Neto</th>
+                        </tr>
+                    </thead>
+                    <tbody id="currencyBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="filters-section">
+            <h3>🔎 Filtros</h3>
+            <div class="filters">
+                <input type="text" id="searchProduct" placeholder="Buscar por producto o ISIN..." />
+                <input type="month" id="filterMonth" />
+                <button id="clearFilters">Limpiar filtros</button>
+            </div>
+        </section>
+
+        <!-- Resumen por producto -->
+        <section class="table-section">
+            <h3>🏦 Resumen por producto</h3>
+            <button id="toggleProductTable" class="collapse-toggle" aria-expanded="true" title="Contraer/Expandir">▼</button>
+            <div class="table-wrapper">
+                <table id="productTable">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>ISIN</th>
+                            <th>Eventos</th>
+                            <th>Divisa</th>
+                            <th>Bruto</th>
+                            <th>Retención</th>
+                            <th>Neto</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Dividendos por evento -->
+        <section class="table-section">
+            <h3>📋 Dividendos agrupados por evento</h3>
+            <button id="toggleDividendsTable" class="collapse-toggle" aria-expanded="true" title="Contraer/Expandir">▼</button>
+            <div class="table-info">
+                <span id="groupCount">0 eventos</span>
+            </div>
+            <div class="table-wrapper">
+                <table id="dividendsTable">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Producto</th>
+                            <th>Divisa</th>
+                            <th>Dividendo Bruto</th>
+                            <th>Retención</th>
+                            <th>Dividendo Neto</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dividendsBody"></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="dividendos.js"></script>
+</body>
+</html>

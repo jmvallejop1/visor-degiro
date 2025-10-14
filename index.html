@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visor DeGiro - Análisis de Cuenta</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <nav class="main-nav">
+            <div class="nav-brand">📊 Visor DeGiro</div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-item active">💼 Portfolio</a>
+                <a href="dividendos.html" class="nav-item">💵 Dividendos</a>
+                <a href="operaciones.html" class="nav-item">📈  Operaciones</a>
+            </div>
+        </nav>
+
+        <header>
+            <h1>📊 Portfolio</h1>
+            <p>Análisis de transacciones y estado de cuenta</p>
+            <!-- Botón para resetear transacciones guardadas -->
+            <div style="margin-top: 0.75rem;">
+                <button id="resetTransactionsBtn" style="display: none; padding: 0.5rem 0.75rem; border-radius: 0.5rem; border: 1px solid var(--border-color); background: #fff; cursor: pointer;">🧹 Resetear transacciones guardadas</button>
+            </div>
+        </header>
+
+        <div class="file-upload-section">
+            <label for="csvFile" class="file-label">
+                📁 Cargar archivo Excel o CSV
+                <input type="file" id="csvFile" accept=".csv,.xls,.xlsx" />
+            </label>
+            <span id="fileName" class="file-name"></span>
+        </div>
+
+        <div id="dashboard" class="dashboard" style="display: none;">
+            <!-- Resumen General (eliminado por petición) -->
+
+            <!-- Depósitos en el tiempo -->
+            <section class="charts-section">
+                <div class="chart-container">
+                    <h3>💸 Depósitos a lo largo del tiempo
+                        <button class="toggle-btn" data-target="#depositsSection" aria-expanded="true" title="Ocultar/Mostrar">▾</button>
+                    </h3>
+                    <div id="depositsSection" class="section-body">
+                        <div id="totalDepositsContainer" style="margin-bottom:0.5rem; font-weight:600">Total depósitos: <span id="totalDepositsText">-</span></div>
+                        <canvas id="depositsChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- (Se elimina la sección de gráficos de saldo y tipos) -->
+
+            <!-- (Filtros movidos dentro de la sección de Compras/Ventas) -->
+
+            <!-- Portfolio -->
+            <section class="portfolio-section">
+                <h3>💼 Portfolio Actual
+                    <button class="toggle-btn" data-target="#portfolioSection" aria-expanded="true" title="Ocultar/Mostrar">▾</button>
+                </h3>
+                <div id="portfolioSection" class="section-body">
+                    <!-- Buscador -->
+                    <div style="margin-bottom: 1rem;">
+                        <input type="text" id="searchProduct" placeholder="Buscar por producto o ISIN..." style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem; font-size: 1rem;" />
+                    </div>
+                    
+                    <div class="table-wrapper">
+                        <table id="portfolioTable">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Producto</th>
+                                    <th>ISIN</th>
+                                    <th style="text-align: center;">Acciones</th>
+                                    <th style="text-align: right;">Break-Even Price</th>
+                                    <th style="text-align: right;">Valor Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="portfolioBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
