@@ -31,16 +31,47 @@
                     <!-- Removed Compra/Venta chips to keep the filters compact -->
                     <input type="month" id="filterMonth" />
                     <button id="clearFilters">Limpiar filtros</button>
-                    <div class="calc-method" style="display: flex; gap: 0.5rem; align-items: center; padding: 0.35rem 0.5rem; background: #f3f4f6; border-radius: 8px; border: 1px solid #e5e7eb;">
-                        <span style="font-weight: 700; color: #1f2937; font-size: 0.9rem; margin-right:0.25rem;">📊 Método de cálculo:</span>
-                        <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; padding: 0.25rem 0.5rem; background: white; border: 2px solid #d1d5db; border-radius: 6px; transition: all 0.15s; font-weight: 500; font-size: 0.9rem;">
-                            <input type="radio" name="calcMethod" value="fifo" checked style="cursor: pointer; width: 14px; height: 14px;" />
-                            <span>FIFO</span>
+                </div>
+            </section>
+
+            <section class="simulator-section" style="margin-top: 1.5rem;">
+                <h3>🧮 Simulador de Venta</h3>
+                <p style="margin-bottom: 0.5rem; color: #4b5563;">Selecciona una posición y prueba una venta hipotética usando FIFO. Marca "Desglosar lotes" para ver exactamente qué lotes se consumirían.</p>
+
+                <div class="simulator-card" style="background: #ffffff; border: 1px solid #e6edf8; padding: 1rem; border-radius: 10px; box-shadow: 0 1px 2px rgba(15,23,42,0.03);">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 0.75rem; align-items: end;">
+                        <div>
+                            <label style="display:block; font-weight:600; color:#0f172a; margin-bottom:0.25rem;">Producto</label>
+                            <select id="simProduct" style="width:100%; padding:0.5rem; border-radius:8px; border:1px solid #d1d5db;">
+                                <option value="">Cargando posiciones...</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label style="display:block; font-weight:600; color:#0f172a; margin-bottom:0.25rem;">Acciones a vender</label>
+                            <input type="number" id="simShares" min="0" step="0.0001" placeholder="Ej. 10" style="width:100%; padding:0.5rem; border-radius:8px; border:1px solid #d1d5db;" />
+                        </div>
+
+                        <div>
+                            <label style="display:block; font-weight:600; color:#0f172a; margin-bottom:0.25rem;">Precio por acción</label>
+                            <input type="number" id="simPrice" min="0" step="0.0001" placeholder="Ej. 120" style="width:100%; padding:0.5rem; border-radius:8px; border:1px solid #d1d5db;" />
+                        </div>
+
+                        <div style="display:flex; gap:0.5rem; align-items:center;">
+                            <button id="simulateSale" style="padding:0.6rem 1rem; background:#0369a1; color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer;">Simular</button>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:1rem; align-items:center; margin-top:0.75rem;">
+                        <label style="display:flex; align-items:center; gap:0.5rem; color:#334155;">
+                            <input type="checkbox" id="simBreakdown" />
+                            <span style="font-weight:600;">Desglosar lotes</span>
                         </label>
-                        <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; padding: 0.25rem 0.5rem; background: white; border: 2px solid #d1d5db; border-radius: 6px; transition: all 0.15s; font-weight: 500; font-size: 0.9rem;">
-                            <input type="radio" name="calcMethod" value="average" style="cursor: pointer; width: 14px; height: 14px;" />
-                            <span>Prom. Ponderado</span>
-                        </label>
+                        <div style="margin-left:auto; color:#64748b; font-size:0.92rem;">Moneda: <span id="simCurrency">EUR</span></div>
+                    </div>
+
+                    <div id="simulationResult" style="margin-top:0.85rem; padding:0.85rem; background:#f8fafc; border-radius:8px; border:1px solid #e6eff9; color:#0f172a; min-height:64px;">
+                        Introduce una simulación para ver el resultado estimado.
                     </div>
                 </div>
             </section>
