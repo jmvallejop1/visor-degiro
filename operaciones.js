@@ -15,7 +15,7 @@ function calculatePositions() {
         const key = (t.isin && t.isin.trim()) ? t.isin.trim() : (t.producto || parsed.product || '').trim();
         if (!key) return;
 
-        const currency = parsed.currency || t.moneda1 || t.moneda2 || 'EUR';
+    const currency = normalizeCurrencyCode(parsed.currency || t.moneda1 || t.moneda2 || 'EUR');
         const productName = (t.producto || parsed.product || key || '').trim();
         const isin = (t.isin || '').trim();
 
@@ -220,6 +220,8 @@ function loadFromStorage() {
     if (stored) {
         try {
             allTransactions = JSON.parse(stored);
+            allTransactions.forEach(normalizeTransactionCurrency);
+            try { localStorage.setItem('degiro.transactions.v1', JSON.stringify(allTransactions)); } catch (_) {}
             filteredTransactions = [...allTransactions];
             displayDashboard();
         } catch (e) {
@@ -240,6 +242,42 @@ function formatAmount(amount) {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
     }).format(amount);
+}
+
+function normalizeCurrencyCode(code) {
+    const upper = (code || '').toUpperCase();
+    if (!upper) return '';
+    if (upper === 'GBX') return 'GBP';
+    return upper;
+}
+
+function normalizeCurrencyAmount(code, amount) {
+    if ((code || '').toUpperCase() === 'GBX') {
+        const numeric = typeof amount === 'number' ? amount : parseFloat(amount);
+        const converted = !Number.isNaN(numeric) ? numeric / 100 : amount;
+        return { code: 'GBP', amount: converted };
+    }
+    return { code: normalizeCurrencyCode(code), amount };
+}
+
+function normalizeTransactionCurrency(transaction) {
+    if (!transaction || typeof transaction !== 'object') return;
+
+    if ('moneda1' in transaction) {
+        const result = normalizeCurrencyAmount(transaction.moneda1, transaction.variacion);
+        transaction.moneda1 = result.code;
+        if (typeof result.amount === 'number' && !Number.isNaN(result.amount)) {
+            transaction.variacion = result.amount;
+        }
+    }
+
+    if ('moneda2' in transaction) {
+        const result = normalizeCurrencyAmount(transaction.moneda2, transaction.saldo);
+        transaction.moneda2 = result.code;
+        if (typeof result.amount === 'number' && !Number.isNaN(result.amount)) {
+            transaction.saldo = result.amount;
+        }
+    }
 }
 
 function formatShares(amount) {
@@ -310,8 +348,15 @@ function parseTradeFromDescripcion(descripcion) {
     const priceNumMatch = pricePart.match(/([0-9]+(?:[\.,][0-9]+)?)/);
     const currencyMatch = pricePart.match(/\b([A-Z]{3})\b/);
     const priceStr = priceNumMatch ? priceNumMatch[1] : null;
-    const currency = currencyMatch ? currencyMatch[1] : '';
-    const price = priceStr ? parseAmount(priceStr) : null;
+        let currency = currencyMatch ? currencyMatch[1] : '';
+        let price = priceStr ? parseAmount(priceStr) : null;
+
+        if (currency && currency.toUpperCase() === 'GBX') {
+            currency = 'GBP';
+            if (price !== null && !Number.isNaN(price)) {
+                price = price / 100;
+            }
+        }
 
     return { action, quantity, product, price, currency };
 }
@@ -413,11 +458,11 @@ function displayTransactionsTable() {
         }
 
         const totalOps = group.compras.length + group.ventas.length;
-        const currency = position?.currency ||
+        const currency = normalizeCurrencyCode(position?.currency ||
             group.ventas[0]?.parsed.currency ||
             group.compras[0]?.parsed.currency ||
             group.ventas[0]?.trans.moneda1 ||
-            'EUR';
+            'EUR');
         const currentShares = position?.shares || 0;
         const avgPosition = currentShares > 0 && position ? position.totalCost / currentShares : 0;
         const totalCost = position?.totalCost || 0;
@@ -530,7 +575,7 @@ function displayTransactionsTable() {
                 if (position && position.history.length > 0) {
                     const historyEntry = findSaleHistoryEntry(position, trans, parsed);
                     if (historyEntry) {
-                        const saleCurrency = historyEntry.currency || parsed.currency || trans.moneda1 || trans.moneda2 || 'EUR';
+                        const saleCurrency = normalizeCurrencyCode(historyEntry.currency || parsed.currency || trans.moneda1 || trans.moneda2 || 'EUR');
                         saleQuantity = historyEntry.quantity || saleQuantity;
 
                         if (historyEntry.avgSale > 0) {

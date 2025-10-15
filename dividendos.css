@@ -13,12 +13,22 @@
 
 .success { background: var(--success-color); color: #fff; border: none; }
 
+section + section {
+  margin-top: 3rem;
+}
+
 .details-row td { background: #f9fafb; padding: 0; }
 .inner-table { width: 100%; border-collapse: collapse; }
 .inner-table td { padding: .5rem .75rem; border-bottom: 1px solid var(--border-color); }
+.details-wrapper { max-height: 340px; overflow-y: auto; }
 
-/* Make rows clickable */
-#dividendsTable tbody tr { cursor: pointer; }
+#productTable tbody tr.product-row { cursor: pointer; }
+.expand-cell { width: 32px; text-align: center; }
+.expand-icon {
+  display: inline-block;
+  transition: transform 0.2s ease;
+  color: var(--text-secondary);
+}
 
 /* Collapse toggle button */
 .collapse-toggle {
@@ -31,3 +41,188 @@
   color: var(--text-secondary);
 }
 .collapse-toggle[aria-expanded="false"] { transform: rotate(-90deg); }
+
+.analysis-section {
+  margin-top: 3rem;
+}
+
+.analysis-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.analysis-controls label {
+  font-weight: 600;
+  color: #111827;
+}
+
+.analysis-controls select {
+  min-width: 260px;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.6rem;
+  background: #fff;
+  font-size: 1rem;
+}
+
+.analysis-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+
+.summary-card {
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.summary-card span {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.summary-card strong {
+  font-size: 1.1rem;
+  color: #111827;
+}
+
+.analysis-charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.75rem;
+}
+
+.comparison-section .chart-container {
+  margin-bottom: 1.5rem;
+}
+
+.comparison-section .empty-state {
+  margin: 0;
+}
+
+.chart-container.small {
+  background: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  height: 320px;
+  position: relative;
+}
+
+.chart-container.small h4 {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.chart-container.small canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.chart-container.medium {
+  background: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  height: 360px;
+  position: relative;
+  grid-column: span 2;
+}
+
+.chart-container.medium h4 {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.chart-container.medium canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.empty-state {
+  padding: 1.5rem 0;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.analysis-section .table-wrapper {
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  background: #fff;
+  overflow: hidden;
+}
+
+#productYearTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+#productYearTable thead {
+  background: #f1f5f9;
+  color: #1f2937;
+}
+
+#productYearTable th,
+#productYearTable td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+#productYearTable th {
+  text-align: left;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+#productYearTable td.amount,
+#productYearTable td .amount {
+  text-align: right;
+}
+
+#productYearTable tbody tr:hover {
+  background: #f8fafc;
+}
+
+.filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.filters-row input[type="text"],
+.filters-row input[type="month"] {
+  flex: 1 1 220px;
+  min-width: 180px;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.6rem;
+  font-size: 1rem;
+}
+
+.filters-row button {
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.6rem;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.filters-row button:hover {
+  background: #f1f5f9;
+}

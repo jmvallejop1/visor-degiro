@@ -53,6 +53,8 @@ function loadFromStorage() {
     if (stored) {
         try {
             allTransactions = JSON.parse(stored);
+            allTransactions.forEach(normalizeTransactionCurrency);
+            try { localStorage.setItem('degiro.transactions.v1', JSON.stringify(allTransactions)); } catch (_) {}
             filteredTransactions = [...allTransactions];
             displayDashboard();
             checkStorageButtonVisibility();
@@ -210,6 +212,8 @@ function parseExcel(data) {
                 idOrden: row[11] ? String(row[11]).trim() : ''
             };
 
+            normalizeTransactionCurrency(transaction);
+
             allTransactions.push(transaction);
         }
 
@@ -254,6 +258,8 @@ function parseCSV(content) {
             idOrden: values[11]?.replace(/"/g, '').trim() || ''
         };
 
+        normalizeTransactionCurrency(transaction);
+
         allTransactions.push(transaction);
     }
 
@@ -273,6 +279,41 @@ function parseAmount(str) {
     str = String(str).trim();
     
     return parseFloat(str.replace(/\./g, '').replace(',', '.').replace(/"/g, '')) || 0;
+}
+
+function normalizeCurrencyCode(code) {
+    const upper = (code || '').toUpperCase();
+    if (!upper) return '';
+    if (upper === 'GBX') return 'GBP';
+    return upper;
+}
+
+function normalizeCurrencyAmount(code, amount) {
+    const normalizedCode = normalizeCurrencyCode(code);
+    if (normalizedCode === 'GBP' && (code || '').toUpperCase() === 'GBX') {
+        return { code: normalizedCode, amount: (typeof amount === 'number' ? amount : parseFloat(amount)) / 100 };
+    }
+    return { code: normalizedCode, amount };
+}
+
+function normalizeTransactionCurrency(transaction) {
+    if (!transaction || typeof transaction !== 'object') return;
+
+    if ('moneda1' in transaction) {
+        const result = normalizeCurrencyAmount(transaction.moneda1, transaction.variacion);
+        transaction.moneda1 = result.code;
+        if (typeof result.amount === 'number' && !Number.isNaN(result.amount)) {
+            transaction.variacion = result.amount;
+        }
+    }
+
+    if ('moneda2' in transaction) {
+        const result = normalizeCurrencyAmount(transaction.moneda2, transaction.saldo);
+        transaction.moneda2 = result.code;
+        if (typeof result.amount === 'number' && !Number.isNaN(result.amount)) {
+            transaction.saldo = result.amount;
+        }
+    }
 }
 
 function formatAmount(amount) {
@@ -475,8 +516,15 @@ function parseTradeFromDescripcion(descripcion) {
     const priceNumMatch = pricePart.match(/([0-9]+(?:[\.,][0-9]+)?)/);
     const currencyMatch = pricePart.match(/\b([A-Z]{3})\b/);
     const priceStr = priceNumMatch ? priceNumMatch[1] : null;
-    const currency = currencyMatch ? currencyMatch[1] : '';
-    const price = priceStr ? parseAmount(priceStr) : null;
+    let currency = currencyMatch ? currencyMatch[1] : '';
+    let price = priceStr ? parseAmount(priceStr) : null;
+
+    if (currency && currency.toUpperCase() === 'GBX') {
+        currency = 'GBP';
+        if (price !== null && !Number.isNaN(price)) {
+            price = price / 100;
+        }
+    }
 
     return { action, quantity, product, price, currency };
 }
@@ -502,7 +550,7 @@ function buildAndRenderPortfolio() {
         const key = (t.isin && t.isin.trim()) ? t.isin.trim() : (t.producto || parsed.product || '').trim();
         if (!key) return;
 
-        const currency = parsed.currency || t.moneda1 || t.moneda2 || 'EUR';
+    const currency = normalizeCurrencyCode(parsed.currency || t.moneda1 || t.moneda2 || 'EUR');
         const productName = t.producto || parsed.product || key;
 
         if (!positions.has(key)) {
