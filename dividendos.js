@@ -13,6 +13,7 @@ let productYearMap = new Map();
 let globalDividendTotals = { base: 0, perCurrency: {} };
 let productYearBarChart = null;
 let annualYieldChart = null;
+let currencyYearChart = null;
 
 // DOM
 const searchProduct = document.getElementById('searchProduct');
@@ -30,6 +31,11 @@ const globalTotalsByCurrencyEl = document.getElementById('globalTotalsByCurrency
 const annualYieldCanvas = document.getElementById('annualYieldChart');
 const annualYieldYearSelect = document.getElementById('annualYieldYearSelect');
 const annualYieldEmptyEl = document.getElementById('annualYieldEmpty');
+const currencyYearChartContainer = document.getElementById('currencyYearChartContainer');
+const currencyYearChartEl = document.getElementById('currencyYearChart');
+const currencyYearHead = document.getElementById('currencyYearHead');
+const currencyYearBody = document.getElementById('currencyYearBody');
+const currencyYearEmptyEl = document.getElementById('currencyYearEmpty');
 
 searchProduct.addEventListener('input', applyFilters);
 filterMonth.addEventListener('change', applyFilters);
@@ -415,6 +421,207 @@ function renderCurrencySummary() {
   });
 }
 
+function buildCurrencyYearlyEvolution(sourceGroups = []) {
+  const yearMap = new Map();
+  const currencySet = new Set();
+
+  for (const group of sourceGroups) {
+    if (!group) continue;
+    const dateKey = normalizeDateKey(group.fechaValor || group.fecha);
+    const year = dateKey ? dateKey.slice(0, 4) : '';
+    if (!year) continue;
+
+    const perCurrency = group.perCurrency || {};
+    for (const [currency, values] of Object.entries(perCurrency)) {
+      const code = normalizeCurrencyCode(currency);
+      if (!code) continue;
+      const gross = values && typeof values.gross === 'number' ? values.gross : 0;
+      const withholding = values && typeof values.withholding === 'number' ? values.withholding : 0;
+      const net = gross - withholding;
+      if (Math.abs(gross) < 1e-6 && Math.abs(withholding) < 1e-6 && Math.abs(net) < 1e-6) {
+        continue;
+      }
+
+      currencySet.add(code);
+      if (!yearMap.has(year)) {
+        yearMap.set(year, { currencies: {} });
+      }
+
+      const entry = yearMap.get(year);
+      if (!entry.currencies[code]) {
+        entry.currencies[code] = { gross: 0, withholding: 0, net: 0 };
+      }
+
+      entry.currencies[code].gross += gross;
+      entry.currencies[code].withholding += withholding;
+      entry.currencies[code].net += net;
+    }
+  }
+
+  const years = Array.from(yearMap.keys()).sort();
+  const currencies = Array.from(currencySet).sort();
+
+  return { years, currencies, yearMap };
+}
+
+function renderCurrencyYearlyEvolution(evolution) {
+  if (!currencyYearBody || !currencyYearHead) return;
+
+  if (currencyYearChart) {
+    try { currencyYearChart.destroy(); } catch (_) {}
+    currencyYearChart = null;
+  }
+
+  const years = evolution && Array.isArray(evolution.years) ? evolution.years : [];
+  const currencies = evolution && Array.isArray(evolution.currencies) ? evolution.currencies : [];
+  const yearMap = evolution && evolution.yearMap instanceof Map ? evolution.yearMap : new Map();
+  const hasData = years.length > 0 && currencies.length > 0;
+
+  if (!hasData) {
+    const colspan = 1;
+    currencyYearHead.innerHTML = '<tr><th>Año</th></tr>';
+    currencyYearBody.innerHTML = `<tr><td colspan="${colspan}" class="empty-state">Sin datos de dividendos agrupados por divisa.</td></tr>`;
+    if (currencyYearChartContainer) currencyYearChartContainer.style.display = 'none';
+    if (currencyYearEmptyEl) currencyYearEmptyEl.style.display = 'block';
+    return;
+  }
+
+  if (currencyYearChartContainer) currencyYearChartContainer.style.display = '';
+  if (currencyYearEmptyEl) currencyYearEmptyEl.style.display = 'none';
+
+  const headCells = ['<th>Año</th>', ...currencies.map((ccy) => `<th>${ccy}</th>`)];
+  currencyYearHead.innerHTML = `<tr>${headCells.join('')}</tr>`;
+
+  const rows = years.map((year) => {
+    const entry = yearMap.get(year) || { currencies: {} };
+    const cells = currencies.map((ccy) => {
+      const record = entry.currencies ? entry.currencies[ccy] : null;
+      const amount = record ? record.net : 0;
+      if (!record || Math.abs(amount) < 1e-6) {
+        return '<td class="amount">-</td>';
+      }
+      const cls = amount >= 0 ? 'positive' : 'negative';
+      return `<td class="amount ${cls}">${formatAmount(amount)} ${ccy}</td>`;
+    }).join('');
+    return `<tr><td>${year}</td>${cells}</tr>`;
+  }).join('');
+
+  const colspan = currencies.length + 1;
+  currencyYearBody.innerHTML = rows || `<tr><td colspan="${colspan}" class="empty-state">Sin datos de dividendos agrupados por divisa.</td></tr>`;
+  // Forzar reflow y alinear anchos de columnas entre thead y tbody
+  // Primero dejar que el DOM pinte
+  requestAnimationFrame(() => {
+    const tbl = document.getElementById('currencyYearTable');
+    if (tbl) {
+      // Asegurar que thead tiene celdas y tbody tiene filas
+      const ths = Array.from(tbl.querySelectorAll('thead th'));
+      const rows = Array.from(tbl.querySelectorAll('tbody tr'));
+      if (ths.length && rows.length) {
+        // Distribuir anchos en porcentaje: 1 columna 'Año' + N columnas de divisas
+        const cols = ths.length;
+        // Reservamos 18% para la columna Año si hay más de 3 columnas, si no 25%
+        const yearPct = cols > 3 ? 18 : 25;
+        const restPct = 100 - yearPct;
+        const perCurrencyPct = cols > 1 ? Math.floor(restPct / (cols - 1)) : restPct;
+
+        // Aplicar ancho a th
+        ths.forEach((th, idx) => {
+          if (idx === 0) {
+            th.style.width = yearPct + '%';
+          } else {
+            th.style.width = perCurrencyPct + '%';
+          }
+        });
+
+        // Aplicar el mismo ancho a cada td según su índice de columna
+        for (const row of rows) {
+          const tds = Array.from(row.querySelectorAll('td'));
+          for (let i = 0; i < ths.length; i++) {
+            const td = tds[i];
+            if (!td) continue;
+            if (i === 0) {
+              td.style.width = yearPct + '%';
+            } else {
+              td.style.width = perCurrencyPct + '%';
+            }
+          }
+        }
+      }
+      // Forzar layout fijo
+      tbl.style.tableLayout = 'fixed';
+      // Trigger reflow
+      // eslint-disable-next-line no-unused-vars
+      const _h = tbl.offsetHeight;
+    }
+
+    // Si hay gráfico, forzamos su redimensionado para que respete nuevo tamaño de contenedor
+    if (currencyYearChart) {
+      try { currencyYearChart.resize(); } catch (_) {}
+    }
+  });
+  if (!currencyYearChartEl || typeof Chart === 'undefined') {
+    return;
+  }
+
+  const palette = ['#1d4ed8', '#16a34a', '#f97316', '#7c3aed', '#dc2626', '#0ea5e9', '#fb7185', '#14b8a6', '#f59e0b', '#6366f1'];
+  const datasets = currencies.map((ccy, idx) => ({
+    label: ccy,
+    data: years.map((year) => {
+      const entry = yearMap.get(year);
+      const record = entry && entry.currencies ? entry.currencies[ccy] : null;
+      return record ? Number(record.net || 0) : 0;
+    }),
+    borderWidth: 2,
+    borderColor: palette[idx % palette.length],
+    backgroundColor: hexToRgba(palette[idx % palette.length], 0.15),
+    fill: false,
+    tension: 0.25,
+    pointRadius: 3,
+    pointHoverRadius: 5
+  }));
+
+  currencyYearChart = new Chart(currencyYearChartEl, {
+    type: 'line',
+    data: {
+      labels: years,
+      datasets
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: true },
+        tooltip: {
+          callbacks: {
+            label: (context) => {
+              const value = context.parsed && typeof context.parsed.y === 'number' ? context.parsed.y : 0;
+              const label = context.dataset ? context.dataset.label : '';
+              return `${label}: ${formatAmount(value)} ${label}`;
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          ticks: {
+            callback: (value) => formatAmount(value)
+          },
+          title: {
+            display: true,
+            text: 'Importe neto (divisa original)'
+          }
+        },
+        x: {
+          title: {
+            display: true,
+            text: 'Año'
+          }
+        }
+      }
+    }
+  });
+}
+
 // Resumen por producto
 function buildProductSummary() {
   const acc = new Map();
@@ -608,6 +815,8 @@ function refreshYearlyAnalysis(sourceGroups = groups) {
   globalDividendTotals = globalTotals;
   populateProductSelector(currentSelection);
   renderGlobalTotals();
+  const currencyEvolution = buildCurrencyYearlyEvolution(sourceGroups || []);
+  renderCurrencyYearlyEvolution(currencyEvolution);
   renderProductYearDetails(productYearSelect.value || '');
   const selectedYear = updateAnnualYieldYearOptions(productYearMap);
   renderAnnualYieldComparison(productYearMap, selectedYear);
@@ -1285,6 +1494,20 @@ function computeAverageCost(samples = []) {
   if (!values.length) return 0;
   const total = values.reduce((sum, val) => sum + val, 0);
   return total / values.length;
+}
+
+function hexToRgba(hex, alpha) {
+  const normalized = (hex || '').replace('#', '');
+  if (normalized.length !== 6) {
+    return hex;
+  }
+  const r = parseInt(normalized.slice(0, 2), 16);
+  const g = parseInt(normalized.slice(2, 4), 16);
+  const b = parseInt(normalized.slice(4, 6), 16);
+  if ([r, g, b].some((v) => Number.isNaN(v))) {
+    return hex;
+  }
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
 function getCurrentShares(key) {

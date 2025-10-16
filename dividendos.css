@@ -151,6 +151,53 @@ section + section {
   height: 100% !important;
 }
 
+.currency-evolution {
+  margin-top: 3rem;
+}
+
+.currency-evolution .chart-container.small {
+  margin-bottom: 1.25rem; /* espacio entre gráfico y tabla */
+}
+
+#currencyYearTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  table-layout: fixed; /* ayuda a mantener anchos consistentes entre thead y tbody */
+}
+
+#currencyYearTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+#currencyYearTable thead {
+  background: #f1f5f9;
+  color: #1f2937;
+}
+
+#currencyYearTable th,
+#currencyYearTable td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+#currencyYearTable th {
+  text-align: left;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+#currencyYearTable td.amount {
+  text-align: right;
+}
+
+#currencyYearTable tbody tr:hover {
+  background: #f8fafc;
+}
+
 .empty-state {
   padding: 1.5rem 0;
   text-align: center;
@@ -225,4 +272,23 @@ section + section {
 
 .filters-row button:hover {
   background: #f1f5f9;
+}
+
+/* Centramos cabeceras y celdas en tablas de dividendos */
+#currencyTable th,
+#currencyTable td,
+#productTable th,
+#productTable td,
+#currencyYearTable th,
+#currencyYearTable td,
+#productYearTable th,
+#productYearTable td,
+.inner-table th,
+.inner-table td {
+  text-align: center !important;
+}
+
+#productTable th:first-child,
+#productTable td:first-child {
+  width: 32px;
 }

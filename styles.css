@@ -353,8 +353,12 @@ table {
 
 thead {
     background: var(--bg-color);
+}
+
+.table-wrapper thead th {
     position: sticky;
     top: 0;
+    background: var(--bg-color);
     z-index: 10;
 }
 
@@ -381,6 +385,10 @@ tbody tr:hover {
 
 .amount {
     font-weight: 600;
+}
+
+td.amount {
+    text-align: right;
 }
 
 .amount.positive {

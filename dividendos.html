@@ -43,6 +43,29 @@
             </div>
         </section>
 
+        <section class="analysis-section currency-evolution">
+            <h3>📈 Evolución anual por divisa</h3>
+            <div id="currencyYearChartContainer" class="chart-container small">
+                <h4>Dividendos netos por año</h4>
+                <canvas id="currencyYearChart"></canvas>
+            </div>
+            <p id="currencyYearEmpty" class="empty-state" style="display: none;">Sin datos de dividendos agrupados por divisa.</p>
+            <div class="table-wrapper">
+                <table id="currencyYearTable">
+                    <thead id="currencyYearHead">
+                        <tr>
+                            <th>Año</th>
+                        </tr>
+                    </thead>
+                    <tbody id="currencyYearBody">
+                        <tr>
+                            <td class="empty-state">Sin datos de dividendos agrupados por divisa.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
         <section class="analysis-section">
             <h3>📆 Evolución anual por producto</h3>
             <div class="analysis-controls">
