@@ -111,37 +111,73 @@ if (resetTransactionsBtn) {
 }
 
 // Función para manejar la selección del archivo
-function handleFileSelect(event) {
-    const file = event.target.files[0];
-    if (!file) return;
+async function handleFileSelect(event) {
+    const files = Array.from(event.target.files);
+    if (files.length === 0) return;
 
-    fileNameSpan.textContent = `Archivo cargado: ${file.name}`;
+    const fileNames = files.map(f => f.name).join(', ');
+    fileNameSpan.textContent = `Archivos cargados: ${fileNames}`;
 
-    const fileExtension = file.name.split('.').pop().toLowerCase();
+    let newTransactions = [];
 
-    if (fileExtension === 'csv') {
-        // Leer archivo CSV
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const content = e.target.result;
-            parseCSV(content);
-        };
-        reader.readAsText(file, 'UTF-8');
-    } else if (fileExtension === 'xls' || fileExtension === 'xlsx') {
-        // Leer archivo Excel
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const data = new Uint8Array(e.target.result);
-            parseExcel(data);
-        };
-        reader.readAsArrayBuffer(file);
-    } else {
-        alert('Por favor, selecciona un archivo CSV, XLS o XLSX válido.');
+    for (const file of files) {
+        try {
+            const transactions = await processFile(file);
+            newTransactions = newTransactions.concat(transactions);
+        } catch (error) {
+            console.error(`Error processing file ${file.name}:`, error);
+            alert(`Error al procesar el archivo ${file.name}.`);
+        }
+    }
+
+    if (newTransactions.length > 0) {
+        allTransactions = newTransactions;
+        
+        // Persistimos para que la pestaña de dividendos pueda reutilizar
+        try { localStorage.setItem('degiro.transactions.v1', JSON.stringify(allTransactions)); } catch (_) {}
+        filteredTransactions = [...allTransactions];
+        displayDashboard();
+        checkStorageButtonVisibility();
     }
 }
 
+function processFile(file) {
+    return new Promise((resolve, reject) => {
+        const fileExtension = file.name.split('.').pop().toLowerCase();
+        
+        if (fileExtension !== 'csv' && fileExtension !== 'xls' && fileExtension !== 'xlsx') {
+            return reject(new Error('Formato no soportado'));
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            try {
+                let transactions = [];
+                if (fileExtension === 'csv') {
+                    transactions = parseCSVContent(e.target.result);
+                } else {
+                    const data = new Uint8Array(e.target.result);
+                    transactions = parseExcelContent(data);
+                }
+                resolve(transactions);
+            } catch (err) {
+                reject(err);
+            }
+        };
+
+        reader.onerror = (err) => reject(err);
+
+        if (fileExtension === 'csv') {
+            reader.readAsText(file, 'UTF-8');
+        } else {
+            reader.readAsArrayBuffer(file);
+        }
+    });
+}
+
 // Función para parsear archivos Excel
-function parseExcel(data) {
+function parseExcelContent(data) {
     try {
         const workbook = XLSX.read(data, { type: 'array' });
         const sheetName = workbook.SheetNames[0];
@@ -152,7 +188,7 @@ function parseExcel(data) {
 
         console.log(jsonData);
         
-        allTransactions = [];
+        const transactions = [];
 
         // Saltar la primera fila (encabezados)
         for (let i = 1; i < jsonData.length; i++) {
@@ -214,26 +250,22 @@ function parseExcel(data) {
 
             normalizeTransactionCurrency(transaction);
 
-            allTransactions.push(transaction);
+            transactions.push(transaction);
         }
 
-        // Persistimos para que la pestaña de dividendos pueda reutilizar
-        try { localStorage.setItem('degiro.transactions.v1', JSON.stringify(allTransactions)); } catch (_) {}
-        filteredTransactions = [...allTransactions];
-        displayDashboard();
-    checkStorageButtonVisibility();
+        return transactions;
     } catch (error) {
         console.error('Error al procesar el archivo Excel:', error);
-        alert('Error al procesar el archivo Excel. Por favor, verifica que el formato sea correcto.');
+        throw error;
     }
 }
 
 // Función para parsear el CSV
-function parseCSV(content) {
+function parseCSVContent(content) {
     const lines = content.split('\n');
     const headers = lines[0].split(',');
     
-    allTransactions = [];
+    const transactions = [];
 
     for (let i = 1; i < lines.length; i++) {
         if (lines[i].trim() === '') continue;
@@ -260,14 +292,10 @@ function parseCSV(content) {
 
         normalizeTransactionCurrency(transaction);
 
-        allTransactions.push(transaction);
+        transactions.push(transaction);
     }
 
-    // Persistimos para que la pestaña de dividendos pueda reutilizar
-    try { localStorage.setItem('degiro.transactions.v1', JSON.stringify(allTransactions)); } catch (_) {}
-    filteredTransactions = [...allTransactions];
-    displayDashboard();
-    checkStorageButtonVisibility();
+    return transactions;
 }
 
 // Función para convertir strings de cantidades a números
